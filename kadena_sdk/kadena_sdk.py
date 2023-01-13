@@ -3,7 +3,7 @@ import time
 import json
 import requests
 
-from kadena_sdk import signing
+from kadena_sdk.signing import hash_and_sign
 from kadena_sdk.key_pair import KeyPair
 
 class KadenaSdk():
@@ -94,6 +94,4 @@ class KadenaSdk():
 
 
   def sign(self, command_json):
-    return signing.hash_and_sign(command_json, 
-          self.key_pair.get_pub_key(), 
-          self.key_pair.get_priv_key())
+    return hash_and_sign(command_json, self.key_pair.get_priv_key())
