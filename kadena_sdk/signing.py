@@ -7,7 +7,6 @@ def hash_and_sign(cmd_json, priv_key):
   cmd_data = bytes(cmd_json, encoding="utf8")
 
   # Create the signature
-  # signing_key = priv_key + pub_key
   sk = SigningKey(bytes.fromhex(priv_key))
 
   # Create the hash code
