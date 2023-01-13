@@ -1,0 +1,3 @@
+.pypirc
+/dist
+kadena_sdk.egg-info/

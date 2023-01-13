@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kadena_sdk"
+version = "1.0.4"
+authors = [
+  { name="Luzzotica", email="sterlinglong0@gmail.com" },
+]
+description = "An SDK for interacting with the Kadena Blockchain"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "requests==2.28.1",
+  "ed25519==1.5",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Luzzotica/KadenaPythonSdk"
+"Bug Tracker" = "https://github.com/Luzzotica/KadenaPythonSdk/issues"
