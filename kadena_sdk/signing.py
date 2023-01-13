@@ -1,4 +1,4 @@
-import ed25519
+from ed25519.keys import SigningKey
 import base64
 import hashlib
 
@@ -7,7 +7,7 @@ def hash_and_sign(cmd_json, pub_key, priv_key):
   cmd_data = bytes(cmd_json, encoding="utf8")
 
   # Create the signature
-  sk = ed25519.keys.SigningKey(bytes(priv_key, encoding="utf8"))
+  sk = SigningKey(bytes(priv_key, encoding="utf8"))
   signing_key = priv_key + pub_key
   sk.vk_s = bytes.fromhex(pub_key)
   sk.sk_s = bytes.fromhex(signing_key)
