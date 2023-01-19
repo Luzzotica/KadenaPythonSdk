@@ -12,86 +12,133 @@ class KadenaSdk():
   LOCAL = '/local'
   LISTEN = '/listen'
 
-  def __init__(self, key_pair: KeyPair, base_url, network_id, chain_id):
-    self.key_pair = key_pair
+  def __init__(self, base_url, network_id, key_pair: KeyPair=None):
     self.base_url = base_url
     self.network_id = network_id
-    self.chain_id = chain_id
+    self.key_pair = key_pair
 
 
-  def build_command(self, sender, payload, signers, gas_price=1.0e-5, gas_limit=2500):
+  def build_command(self, 
+    payload, 
+    chain_ids,
+    signers=[], 
+    sender='', 
+    gas_price=1.0e-5, 
+    gas_limit=2500):
+    """Build a command that can be committed (send) to or locally (local)
+    sent to the Kadena network.
+    Will create a command for each chain_id in the chain_ids list."""
     # Create Time Stamp
     t_epoch = time.time()
     t_epoch = round(t_epoch) - 15
 
-    command = {
-      "networkId": self.network_id,
-      "payload": payload,
-      "signers": signers,
-      "meta": {
-        "gasLimit": gas_limit,
-        "chainId": self.chain_id,
-        "gasPrice": gas_price,
-        "sender": sender,
-        "ttl": 28000,
-        "creationTime": t_epoch
-      },
-      "nonce": datetime.now().strftime("%Y%m%d%H%M%S")
-    }
+    sender_actual = sender
+    if sender_actual == '':
+      sender_actual = f'k:{self.key_pair.get_pub_key()}'
 
-    return command
+    signers_actual = signers
+    if self.key_pair and len(signers) == 0:
+      signers_actual.append({ "pubKey": self.key_pair.get_pub_key() })
+
+    cmds = {}
+    for chain_id in chain_ids:
+      command = {
+        "networkId": self.network_id,
+        "payload": payload,
+        "signers": signers_actual,
+        "meta": {
+          "gasLimit": gas_limit,
+          "chainId": chain_id,
+          "gasPrice": gas_price,
+          "sender": sender_actual,
+          "ttl": 28000,
+          "creationTime": t_epoch
+        },
+        "nonce": datetime.now().strftime("%Y%m%d%H%M%S")
+      }
+      cmds[chain_id] = command
+      # cmds.append(command)
+
+    return cmds
 
 
-  def send(self, command):
-    cmd_json = json.dumps(command)
-    hash_code, sig = self.sign(cmd_json)
+  def send(self, cmds):
+    """Commits a list of commands to the Kadena network.
+    Each command is an object created via build_command.
+    Uses the chainId from the command to determine which chain to commit to."""
+    ret = {}
+
+    for command in cmds.values():
+      cmd_json = json.dumps(command)
+      hash_code, sig = self.sign(cmd_json)
     
-    cmds = {
-      'cmds': [
-        {
+      to_post = {
+        'cmds': {
           'hash': hash_code,
           'sigs': [{'sig': sig}],
           'cmd': cmd_json,
         }
-      ]
-    }
+      }
 
-    return requests.post(self.build_url(self.SEND), json=cmds)
+      chain_id = command['meta']['chainId']
+      ret[chain_id] = requests.post(
+        self.build_url(self.SEND, chain_id), 
+        json=to_post)
+
+    return ret
   
   
-  def local(self, command):
-    cmd_json = json.dumps(command)
-    hash_code, sig = self.sign(cmd_json)
+  def local(self, cmds):
+    """Locally (dirty) reads from Kadena using a list of commands.
+    Each command is an object created via build_command.
+    Uses the chainId from the command to determine which chain to read from."""
+    ret = {}
+
+    for command in cmds.values():
+      cmd_json = json.dumps(command)
+      hash_code, sig = self.sign(cmd_json)
     
-    cmd = {
-      'hash': hash_code,
-      'sigs': [{'sig': sig}],
-      'cmd': cmd_json,
-    }
+      to_post = {
+        'hash': hash_code,
+        'sigs': [{'sig': sig}],
+        'cmd': cmd_json,
+      }
 
-    return requests.post(self.build_url(self.LOCAL), json=cmd)
+      chain_id = command['meta']['chainId']
+      ret[chain_id] = requests.post(
+        self.build_url(self.LOCAL, command['meta']['chainId']), 
+        json=to_post)
+
+    return ret
   
 
-  def listen(self, tx_id):
+  def listen(self, tx_id, chain_id):
+    """Blocking. Listens to a transaction on the given chain."""
     data = {
       'listen': tx_id
     }
 
-    return requests.post(self.build_url(self.LISTEN), json=data)
+    return requests.post(self.build_url(self.LISTEN, chain_id), json=data)
   
 
   def send_and_listen(self, command):
-    result = self.send(command)
+    """Commits a command to the Kadena network and listens to the transaction.
+    Uses the chainId from the command to determine which chain to listen on."""
+    chain_id = command['meta']['chainId']
+    result = self.send({ chain_id: command })
     tx_id = result.json()['requestKeys'][0]
     print(f"Listening to tx: {tx_id}")
-    return self.listen(tx_id)
+    return self.listen(tx_id, chain_id)
   
 
-  def build_url(self, endpoint):
-    url = f'{self.base_url}/chainweb/0.0/{self.network_id}/chain/{self.chain_id}/pact/api/v1{endpoint}'
+  def build_url(self, endpoint, chain_id):
+    """Builds a url for a given endpoint and chain_id"""
+    url = f'{self.base_url}/chainweb/0.0/{self.network_id}/chain/{chain_id}/pact/api/v1{endpoint}'
     print(url)
     return url
 
 
   def sign(self, command_json):
+    """Signs a command with the private key of the locally stored 
+    KeyPair instance."""
     return hash_and_sign(command_json, self.key_pair.get_priv_key())

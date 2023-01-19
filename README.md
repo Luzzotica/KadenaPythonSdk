@@ -4,3 +4,7 @@ To Build and Deploy
 python3 -m build
 python3 -m twine upload dist/*
 ```
+
+# To Test
+
+`pytest`

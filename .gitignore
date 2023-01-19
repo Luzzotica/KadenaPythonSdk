@@ -1,3 +1,5 @@
 .pypirc
 /dist
 kadena_sdk.egg-info/
+*.pytest_cache
+*__pycache__
