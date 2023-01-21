@@ -1,4 +1,6 @@
-from kadena_sdk.signing import hash_and_sign
+from kadena_sdk import hash_and_sign, blake_hash
+from kadena_sdk import KadenaSdk
+
 
 def test_sign_message():
     # 09dbbe2d2caf283a5da170cc438eed631b5898b921512cae8720232313483a3e
@@ -10,3 +12,7 @@ def test_sign_message():
 
     print(hash_code, sig)
 
+
+def test_hash():
+  assert(blake_hash("hello") == "Mk3PAn3UowqTLEQfNlol6GsXPe-kuOWJSCU0cbgbcs8")
+  assert(blake_hash({ "foo": {"int":1} }) == "h9BZgylRf_M4HxcBXr15IcSXXXSz74ZC2IAViGle_z4")

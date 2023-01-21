@@ -11,10 +11,13 @@ def key_pair():
 
 @pytest.fixture
 def kadena(key_pair):
-  kadena = KadenaSdk('https://api.testnet.chainweb.com', 
-    'testnet04', 
-    key_pair=key_pair)
+  kadena = KadenaSdk(key_pair=key_pair)
   return kadena
+
+@pytest.fixture
+def kadena_no_keys():
+  kadena_no_keys = KadenaSdk()
+  return kadena_no_keys
 
 @pytest.fixture
 def payload_hello():
@@ -30,7 +33,7 @@ def test_keypair(key_pair):
   assert(key_pair.get_pub_key() == 'ad273a54460305767e2e36f41d1a5fe78c48474a6e3bc18624d53fbbbb5974bb')
   assert(key_pair.get_priv_key() == '5e8b125c89ed409f2cfcc6e863e8aafd60b9d80a4d2333a12592f7a961a62bf8')
 
-def test_build_command(kadena, payload_hello):
+def test_build_command(kadena: KadenaSdk, payload_hello: dict):
   chain_ids = ['0', '1']
   cmds = kadena.build_command(payload_hello, chain_ids)
 
@@ -44,9 +47,21 @@ def test_build_command(kadena, payload_hello):
     assert(cmds[c]['meta']['sender'] == 'k:ad273a54460305767e2e36f41d1a5fe78c48474a6e3bc18624d53fbbbb5974bb')
     assert(cmds[c]['meta']['ttl'] == 28000)
 
-def test_local(kadena, payload_hello):
+def test_local(kadena: KadenaSdk, kadena_no_keys: KadenaSdk, payload_hello: dict):
+  print('Local with keys')
   chain_ids = ['0', '1']
   cmds = kadena.build_command(payload_hello, chain_ids)
   res = kadena.local(cmds)
   assert(res['0'].json()['result']['data'] == 'Test hello')
   assert(res['1'].json()['result']['data'] == 'Test hello')
+
+  print('Local without keys')
+  cmds = kadena_no_keys.build_command(payload_hello, chain_ids)
+  res = kadena_no_keys.local(cmds)
+  assert(kadena_no_keys.key_pair is None)
+  print(res['0'].text)
+  assert(res['0'].json()['result']['data'] == 'Test hello')
+  assert(res['1'].json()['result']['data'] == 'Test hello')
+
+def text_run_pact(kadena_no_keys: KadenaSdk):
+  assert(kadena_no_keys.run_pact('(format "Test {}" ["hello"])') == 'Test hello')
