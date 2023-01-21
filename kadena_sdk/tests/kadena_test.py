@@ -48,18 +48,15 @@ def test_build_command(kadena: KadenaSdk, payload_hello: dict):
     assert(cmds[c]['meta']['ttl'] == 28000)
 
 def test_local(kadena: KadenaSdk, kadena_no_keys: KadenaSdk, payload_hello: dict):
-  print('Local with keys')
   chain_ids = ['0', '1']
   cmds = kadena.build_command(payload_hello, chain_ids)
   res = kadena.local(cmds)
   assert(res['0'].json()['result']['data'] == 'Test hello')
   assert(res['1'].json()['result']['data'] == 'Test hello')
 
-  print('Local without keys')
   cmds = kadena_no_keys.build_command(payload_hello, chain_ids)
   res = kadena_no_keys.local(cmds)
   assert(kadena_no_keys.key_pair is None)
-  print(res['0'].text)
   assert(res['0'].json()['result']['data'] == 'Test hello')
   assert(res['1'].json()['result']['data'] == 'Test hello')
 

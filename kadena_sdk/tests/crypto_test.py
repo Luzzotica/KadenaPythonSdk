@@ -10,8 +10,6 @@ def test_sign_message():
     assert(hash_code == 'URvIHd4RGAg4xWLIK7NfMiP0YGHr3kqVXCez9InPHgM')
     assert(sig == '756ec1891523f56369c98bf2544a2f91033de9cea53773d7cc4d7812babd9a1d0ab03b706e628bd1636fb5d65083711ba6584bf6ffe471a48657e6a571031306')
 
-    print(hash_code, sig)
-
 
 def test_hash():
   assert(blake_hash("hello") == "Mk3PAn3UowqTLEQfNlol6GsXPe-kuOWJSCU0cbgbcs8")

@@ -78,16 +78,12 @@ class KadenaSdk():
         # If we have no sender, just use an empty sender.
         sender_actual = ''
 
-    print(signers)
     signers_actual = signers
-    print(signers)
-    print(self.key_pair)
     if signers == None:
       if self.key_pair:
         signers_actual = [{ "pubKey": self.key_pair.get_pub_key() }]
       else:
         signers_actual = []
-    print(signers_actual)
 
     cmds = {}
     for chain_id in chain_ids:
