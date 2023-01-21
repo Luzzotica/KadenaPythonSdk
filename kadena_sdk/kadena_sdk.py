@@ -19,7 +19,7 @@ class KadenaSdk():
 
 
   def build_command(self, 
-    payload, 
+    payload,
     chain_ids,
     signers=[], 
     sender='', 

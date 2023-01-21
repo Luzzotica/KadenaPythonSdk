@@ -1,7 +1,6 @@
 import pytest
 
-from kadena_sdk.kadena_sdk import KadenaSdk
-from kadena_sdk.key_pair import KeyPair
+from kadena_sdk import KadenaSdk, KeyPair
 
 @pytest.fixture
 def key_pair():
