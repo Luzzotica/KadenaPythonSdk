@@ -7,17 +7,17 @@ from kadena_sdk import KadenaSdk, KeyPair
 key_pair = KeyPair(type='json',
   priv_key='5e8b125c89ed409f2cfcc6e863e8aafd60b9d80a4d2333a12592f7a961a62bf8',
   pub_key='ad273a54460305767e2e36f41d1a5fe78c48474a6e3bc18624d53fbbbb5974bb')
-kadena = KadenaSdk('https://api.testnet.chainweb.com', 
-  'testnet04', 
+
+# base_url will default to https://api.testnet.chainweb.com
+# KeyPair isn't required, but no sigs will be included in any local/send calls
+kadena = KadenaSdk(base_url='https://api.chainweb.com',
   key_pair=key_pair)
 
 # Very open ended: Work directly with the payload.
-payload = {
-  "exec": {
-    "data": {},
-    "code": '(format "Test {}" ["hello"])'
-  }
-}
+payload = kadena.build_exec_payload(
+  '(format "{}" [(read-msg "test")])', 
+  env_data={'test': 'hello'}
+)
 
 # SDK works with whichever chains you choose!
 chain_ids = ['0', '1']
@@ -37,6 +37,12 @@ print(res['0'].json())
 # You can also listen to commands. This is a blocking command.
 # Pass in the transaction id and the chain you want to listen on.
 kadena.listen('tx_id', '0')
+
+## Lastly, if you want to just run some pact code, you can do so
+res = kadena.run_pact(
+  '(format "Test {}" [(read-msg "test")])', 
+  env_data={'test': 'hello'}
+)
 ```
 
 # To Build and Deploy

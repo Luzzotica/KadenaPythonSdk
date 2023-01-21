@@ -64,4 +64,8 @@ def test_local(kadena: KadenaSdk, kadena_no_keys: KadenaSdk, payload_hello: dict
   assert(res['1'].json()['result']['data'] == 'Test hello')
 
 def text_run_pact(kadena_no_keys: KadenaSdk):
-  assert(kadena_no_keys.run_pact('(format "Test {}" ["hello"])') == 'Test hello')
+  res = kadena_no_keys.run_pact(
+    '(format "Test {}" [(read-msg "test")])', 
+    env_data={'test': 'hello'}
+  )
+  assert(res == 'Test hello')
