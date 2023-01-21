@@ -33,6 +33,10 @@ res = kadena.local(cmds)
 # Responses are in a dictionary with keys being the chains 
 # that were interacted with
 print(res['0'].json())
+
+# You can also listen to commands. This is a blocking command.
+# Pass in the transaction id and the chain you want to listen on.
+kadena.listen('tx_id', '0')
 ```
 
 # To Build and Deploy
