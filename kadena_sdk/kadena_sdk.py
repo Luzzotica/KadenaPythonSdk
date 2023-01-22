@@ -48,7 +48,7 @@ class KadenaSdk():
 
 
   def build_command(self, 
-    payload: ExecPayload | ContPayload,
+    payload: dict,
     chain_ids: list[str],
     signers: list[str]=None, 
     sender: str=None, 
@@ -124,13 +124,17 @@ class KadenaSdk():
     for command in cmds.values():
       cmd_json = json.dumps(command)
       hash_code, sig = self.hash_and_sign(cmd_json)
+
+      sigs = [] if sig is None else [{'sig': sig}]
     
       to_post = {
-        'cmds': {
-          'hash': hash_code,
-          'sigs': [{'sig': sig}],
-          'cmd': cmd_json,
-        }
+        'cmds': [
+          {
+            'hash': hash_code,
+            'sigs': sigs,
+            'cmd': cmd_json,
+          }
+        ]
       }
 
       chain_id = command['meta']['chainId']
@@ -169,7 +173,7 @@ class KadenaSdk():
 
       chain_id = command['meta']['chainId']
       ret[chain_id] = requests.post(
-        self.build_url(self.LOCAL, command['meta']['chainId']), 
+        self.build_url(self.LOCAL, chain_id), 
         json=to_post)
 
     return ret

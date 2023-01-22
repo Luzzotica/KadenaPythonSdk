@@ -60,6 +60,12 @@ def test_local(kadena: KadenaSdk, kadena_no_keys: KadenaSdk, payload_hello: dict
   assert(res['0'].json()['result']['data'] == 'Test hello')
   assert(res['1'].json()['result']['data'] == 'Test hello')
 
+def test_send(kadena: KadenaSdk, payload_hello: dict):
+  chain_ids = ['1']
+  cmds = kadena.build_command(payload_hello, chain_ids)
+  res = kadena.send(cmds)
+  assert('requestKeys' in res['1'].json())
+
 def text_run_pact(kadena_no_keys: KadenaSdk):
   res = kadena_no_keys.run_pact(
     '(format "Test {}" [(read-msg "test")])', 
